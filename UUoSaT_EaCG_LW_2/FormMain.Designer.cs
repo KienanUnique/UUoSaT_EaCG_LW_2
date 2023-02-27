@@ -28,34 +28,45 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.glControl1 = new OpenTK.GLControl();
+            this.components = new System.ComponentModel.Container();
+            this.AnT = new OpenTK.GLControl();
+            this.PointInGrap = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
-            // glControl1
+            // AnT
             // 
-            this.glControl1.BackColor = System.Drawing.Color.Black;
-            this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.glControl1.Location = new System.Drawing.Point(0, 0);
-            this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(800, 450);
-            this.glControl1.TabIndex = 0;
-            this.glControl1.VSync = false;
+            this.AnT.BackColor = System.Drawing.Color.Black;
+            this.AnT.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.AnT.Location = new System.Drawing.Point(0, 0);
+            this.AnT.Name = "AnT";
+            this.AnT.Size = new System.Drawing.Size(800, 450);
+            this.AnT.TabIndex = 0;
+            this.AnT.VSync = false;
+            this.AnT.Load += new System.EventHandler(this.AnT_Load);
+            this.AnT.MouseMove += new System.Windows.Forms.MouseEventHandler(this.AnT_MouseMove);
+            // 
+            // PointInGrap
+            // 
+            this.PointInGrap.Interval = 30;
+            this.PointInGrap.Tick += new System.EventHandler(this.PointInGrap_Tick);
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.glControl1);
+            this.Controls.Add(this.AnT);
             this.Name = "FormMain";
             this.Text = "ЛР 2, Гизатуллин Акрам, МО-224";
+            this.Load += new System.EventHandler(this.FormMain_Load);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private OpenTK.GLControl glControl1;
+        private OpenTK.GLControl AnT;
+        private System.Windows.Forms.Timer PointInGrap;
     }
 }
 
