@@ -1,6 +1,6 @@
 ﻿namespace UUoSaT_EaCG_LW_2
 {
-    partial class Form1
+    partial class FormMain
     {
         /// <summary>
         /// Required designer variable.
@@ -28,20 +28,34 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.glControl1 = new OpenTK.GLControl();
             this.SuspendLayout();
             // 
-            // Form1
+            // glControl1
+            // 
+            this.glControl1.BackColor = System.Drawing.Color.Black;
+            this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.glControl1.Location = new System.Drawing.Point(0, 0);
+            this.glControl1.Name = "glControl1";
+            this.glControl1.Size = new System.Drawing.Size(800, 450);
+            this.glControl1.TabIndex = 0;
+            this.glControl1.VSync = false;
+            // 
+            // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Name = "Form1";
-            this.Text = "FormMain";
+            this.Controls.Add(this.glControl1);
+            this.Name = "FormMain";
+            this.Text = "ЛР 2, Гизатуллин Акрам, МО-224";
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private OpenTK.GLControl glControl1;
     }
 }
 
