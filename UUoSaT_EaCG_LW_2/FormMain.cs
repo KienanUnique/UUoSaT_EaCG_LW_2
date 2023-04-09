@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,26 +8,13 @@ namespace UUoSaT_EaCG_LW_2
 {
     public partial class FormMain : Form
     {
-        // размеры окна
-        double ScreenW, ScreenH;
-        // отношения сторон окна визуализации
-        // для корректного перевода координат мыши в координаты,
-        // принятые в программе
-        private float devX;
-        private float devY;
-        // массив, который будет хранить значения x,y точек графика
-        private float[,] GrapValuesArray;
-        // количество элементов в массиве
-        private int elements_count = 0;
-        // флаг, означающий, что массив с значениями координат графика пока еще не заполнен
-        private bool not_calculate = true;
-        // номер ячейки массива, из которой будут взяты координаты для красной точки,
-        // для визуализации текущего кадра
-        private int pointPosition = 0;
-        // вспомогательные переменные для построения линий от курсора мыши к координатным осям
-        private float lineX, lineY;
-        // текущие координаты курсора мыши
-        private float Mcoord_X = 0, Mcoord_Y = 0;
+        private readonly List<PointF> _graphicPoinsList = new List<PointF>();
+        private SizeF _graphSize;
+        private float _screenRatioX;
+        private float _screenRatioY;
+        private PointF mousePoint;
+        private bool _pointsIsNotReady = true;
+        private int _movingOnGraphPointFrame = 0;
 
         private void AnT_Load(object sender, EventArgs e)
         {
@@ -39,21 +27,21 @@ namespace UUoSaT_EaCG_LW_2
 
         private void FormMain_Load(object sender, System.EventArgs e)
         {
-            if((float)AnT.Width <= (float)AnT.Height)
+            if ((float)AnT.Width <= (float)AnT.Height)
             {
-                ScreenW = 30f;
-                ScreenH = 30f * (float)AnT.Height / (float)AnT.Width;
-                GL.Ortho(0f, ScreenW, 0f, ScreenH, -1, 1);
+                _graphSize.Width = 30f;
+                _graphSize.Height = 30f * (float)AnT.Height / (float)AnT.Width;
+                GL.Ortho(0f, _graphSize.Width, 0f, _graphSize.Height, -1, 1);
             }
             else
             {
-                ScreenH = 30f;
-                ScreenW = 30f * (float)AnT.Width / (float)AnT.Height;
+                _graphSize.Height = 30f;
+                _graphSize.Width = 30f * (float)AnT.Width / (float)AnT.Height;
                 GL.Ortho(0.0, 30.0 * (float)AnT.Width / (float)AnT.Height, 0.0, 30.0, -1, 1);
             }
 
-            devX = (float)ScreenH / (float)AnT.Width;
-            devY = (float)ScreenW / (float)AnT.Height;
+            _screenRatioX = (float)_graphSize.Height / (float)AnT.Width;
+            _screenRatioY = (float)_graphSize.Width / (float)AnT.Height;
 
             GL.MatrixMode(MatrixMode.Modelview);
 
@@ -62,45 +50,37 @@ namespace UUoSaT_EaCG_LW_2
 
         private void AnT_MouseMove(object sender, MouseEventArgs e)
         {
-            Mcoord_X = e.X;
-            Mcoord_Y = e.Y;
-
-            lineX = devX * e.X;
-            lineY = (float)(ScreenH - devY * e.Y);
+            mousePoint.X = _screenRatioX * e.X + 13;
+            mousePoint.Y = (float)(_graphSize.Height - _screenRatioY * e.Y + 10);
         }
 
         private void functionCalculation()
         {
             float x = 0, y = 0;
-            GrapValuesArray = new float[300, 2];
+            _graphicPoinsList.Clear();
 
-            elements_count = 0;
-
-            for(x = -2; x <= 3; x += 0.1f)
+            for (x = -2; x <= 3; x += 0.1f)
             {
                 y = 2 * x * x - 3 * x - 8;
-                GrapValuesArray[elements_count, 0] = x;
-                GrapValuesArray[elements_count, 1] = y;
-
-                elements_count++;
+                _graphicPoinsList.Add(new PointF(x, y));
             }
 
-            not_calculate = false;
+            _pointsIsNotReady = false;
         }
 
         private void DrawDiagram()
         {
-            if (not_calculate)
+            if (_pointsIsNotReady)
             {
                 functionCalculation();
             }
 
             GL.Begin(PrimitiveType.LineStrip);
-            GL.Vertex2(GrapValuesArray[0, 0], GrapValuesArray[0, 1]);
+            GL.Vertex2(_graphicPoinsList[0].X, _graphicPoinsList[0].Y);
 
-            for(int ax = 1; ax < elements_count; ax += 2)
+            for (int ax = 1; ax < _graphicPoinsList.Count; ax += 2)
             {
-                GL.Vertex2(GrapValuesArray[ax, 0], GrapValuesArray[ax, 1]);
+                GL.Vertex2(_graphicPoinsList[ax].X, _graphicPoinsList[ax].Y);
             }
 
             GL.End();
@@ -108,7 +88,7 @@ namespace UUoSaT_EaCG_LW_2
             GL.PointSize(5);
             GL.Color3(Color.Red);
             GL.Begin(PrimitiveType.Points);
-            GL.Vertex2(GrapValuesArray[pointPosition, 0], GrapValuesArray[pointPosition, 1]);
+            GL.Vertex2(_graphicPoinsList[_movingOnGraphPointFrame].X, _graphicPoinsList[_movingOnGraphPointFrame].Y);
 
             GL.End();
 
@@ -123,14 +103,14 @@ namespace UUoSaT_EaCG_LW_2
 
         private void PointInGrap_Tick(object sender, System.EventArgs e)
         {
-            if(pointPosition == elements_count - 1)
+            if (_movingOnGraphPointFrame == _graphicPoinsList.Count - 1)
             {
-                pointPosition = 0;
+                _movingOnGraphPointFrame = 0;
             }
 
             Draw();
 
-            pointPosition++;
+            _movingOnGraphPointFrame++;
         }
 
         private void Draw()
@@ -145,7 +125,7 @@ namespace UUoSaT_EaCG_LW_2
 
             for (float ax = -2; ax <= 3; ax += 0.1f)
             {
-                for (float bx = -15; bx < 15; bx ++)
+                for (float bx = -15; bx < 15; bx++)
                 {
                     GL.Vertex2(ax, bx);
                 }
@@ -160,27 +140,18 @@ namespace UUoSaT_EaCG_LW_2
             GL.Vertex2(-15, 0);
             GL.Vertex2(15, 0);
 
-            GL.Vertex2(0, 15);
-            GL.Vertex2(0.1, 14.5);
-            GL.Vertex2(0, 15);
-            GL.Vertex2(-0.1, -14.5);
-
-            GL.Vertex2(15, 0);
-            GL.Vertex2(14.5, 0.1);
-            GL.Vertex2(15, 0);
-            GL.Vertex2(-14.5 , - 0.1);
-
             GL.End();
 
             DrawDiagram();
+
             GL.PopMatrix();
 
             GL.Color3(Color.Red);
             GL.Begin(PrimitiveType.Lines);
-            GL.Vertex2(lineX, 15);
-            GL.Vertex2(lineX, lineY);
-            GL.Vertex2(20, lineY);
-            GL.Vertex2(lineX, lineY);
+            GL.Vertex2(mousePoint.X, 15);
+            GL.Vertex2(mousePoint.X, mousePoint.Y);
+            GL.Vertex2(20, mousePoint.Y);
+            GL.Vertex2(mousePoint.X, mousePoint.Y);
             GL.End();
 
             AnT.SwapBuffers();
